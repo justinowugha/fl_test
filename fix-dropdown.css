@@ -1,0 +1,18 @@
+/* background layers behind everything */
+.site-background,
+.site-background-overlay {
+  z-index: 0 !important;
+  pointer-events: none !important;
+}
+
+/* header always above backgrounds */
+.site-header {
+  z-index: 9999 !important;
+  position: relative !important;
+}
+
+/* dropdown above everything else */
+#mobile-menu {
+  z-index: 10000 !important;
+  pointer-events: auto !important;
+}
