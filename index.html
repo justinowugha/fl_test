@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home | British Classic Fantasy League 2025 🇬🇧</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeInUp 1s ease-out forwards;
+  }
+
+  /* Collapsible shared styles */
+  .rules-collapsible,
+  .prizes-collapsible,
+  .contact-collapsible {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.3s ease;
+  }
+
+  .rules-collapsible.open,
+  .prizes-collapsible.open,
+  .contact-collapsible.open {
+    opacity: 1;
+    max-height: 1000px;
+  }
+
+  .rules-arrow,
+  .prizes-arrow,
+  .contact-arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .rules-arrow.rotate,
+  .prizes-arrow.rotate,
+  .contact-arrow.rotate {
+    transform: rotate(180deg);
+  }
+  </style>
+
+  <!-- Fixes for mobile menu stacking/pointer events -->
+  <link rel="stylesheet" href="/assets/css/fix-dropdown.css">
+</head>
+<body class="relative bg-gray-900 text-white font-sans min-h-screen flex flex-col">
+
+  <div class="absolute inset-0 bg-[url('image_home.jpg')] bg-cover bg-center opacity-45 site-background"></div>
+  <div class="absolute inset-0 bg-black/70 site-background-overlay"></div>
+
+  <div class="relative z-10 flex flex-col flex-grow">
+    <!-- Header -->
+    <header class="site-header w-full bg-gray-900/90 backdrop-blur-sm border-b border-gray-800 relative z-50">
+      <div class="w-full flex items-center justify-center px-4 py-3">
+        <div class="flex-1 text-center">
+          <a href="index.html" class="font-bold text-white hover:text-red-500 transition animate-fade-in-up text-sm sm:text-lg md:text-xl lg:text-2xl">
+            British Classic Fantasy League 2025 🇬🇧
+          </a>
+        </div>
+
+        <!-- Burger button -->
+        <div class="absolute right-4 top-1/2 -translate-y-1/2">
+          <button id="menu-btn" aria-expanded="false" class="text-gray-300 p-2 rounded-md hover:bg-gray-800/50">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span class="sr-only">Open menu</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Dropdown menu -->
+    <div id="mobile-menu" class="fixed top-16 right-4 w-48 bg-gray-900/95 backdrop-blur-sm border border-gray-800 rounded-md shadow-lg z-50 scale-y-0 opacity-0 origin-top transition-transform duration-300 ease-in-out">
+      <nav class="flex flex-col py-2 text-white">
+        <a href="index.html" class="px-4 py-2 hover:text-red-500 hover:bg-gray-800 transition">Home</a>
+        <a href="entry.html" class="px-4 py-2 hover:text-red-500 hover:bg-gray-800 transition">League Entry</a>
+        <a href="leaderboard.html" class="px-4 py-2 hover:text-red-500 hover:bg-gray-800 transition">Leaderboard</a>
+        <a href="accuracy_scores.html" class="px-4 py-2 hover:text-red-500 hover:bg-gray-800 transition">Accuracy Scores</a>
+        <a href="metrics.html" class="px-4 py-2 hover:text-red-500 hover:bg-gray-800 transition">Metrics</a>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col flex-grow justify-center items-center px-4 mt-10 md:mt-0 animate-fade-in min-h-screen">
+      <section class="max-w-3xl w-full bg-gray-800/60 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-700 p-6">
+        <h2 class="text-l font-bold text-center mb-6">
+          Welcome to the British Classic Fantasy League.
+          Think you know ball? Sign up
+          <a href="entry.html"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="underline hover:text-gray-300">
+             here</a>
+          and test your powerlifting knowledge ahead of the 2025 British Classic for the chance to win some great prizes courtesy of our sponsors 
+          at the
+          <a href="https://www.instagram.com/sabadosessionspodcast/?hl=en-gb"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="underline hover:text-gray-300">
+             Sabado Sessions Podcast</a>!
+        </h2>
+
+        <div class="space-y-8">
+          <!-- Collapsible Prizes -->
+          <div>
+            <h3 id="prizesToggle"
+                class="flex items-center justify-between text-xl font-semibold text-red-400 mb-2 cursor-pointer select-none">
+              <span>Prizes</span>
+              <svg id="prizesArrow" xmlns="http://www.w3.org/2000/svg"
+                   class="w-5 h-5 text-red-500 prizes-arrow rotate"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 9l-7 7-7-7" />
+              </svg>
+            </h3>
+
+            <div id="prizesContent" class="prizes-collapsible open mt-1">
+              <ul class="list-disc list-inside text-gray-300 space-y-1">
+                <br /><li>First Place - <b>£80 Cash Prize</b> 💷💷</li>
+                <li>Second Place - <b>£40 Cash Prize</b> 💷</li>
+                <li>Third Place - <b>Bulk Essential Supplement Package</b> 📦</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Collapsible Contact Us (NEW) -->
+          <div>
+            <h3 id="contactToggle"
+                class="flex items-center justify-between text-xl font-semibold text-red-400 mb-2 cursor-pointer select-none">
+              <span>Contact Us</span>
+              <svg id="contactArrow" xmlns="http://www.w3.org/2000/svg"
+                   class="w-5 h-5 text-red-500 contact-arrow rotate"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 9l-7 7-7-7" />
+              </svg>
+            </h3>
+
+            <div id="contactContent" class="contact-collapsible open mt-1">
+              <ul class="list-disc list-inside text-gray-300 space-y-2">
+                <li>
+                  For enquiries regarding prizes or anything else fantasy league related,
+                  DM us
+                  <a href="https://www.instagram.com/britishclassicfl?igsh=aXRucmw2dXk2aHI="
+                     target="_blank" rel="noopener noreferrer"
+                     class="font-semibold text-red-400 hover:text-red-300">
+                    @britishclassicfl
+                  </a>
+                  on IG, where you can also follow for more updates.
+                </li>
+                <li>
+                  Alternatively, email
+                  <a href="mailto:britishclassicfl@gmail.com"
+                     class="font-semibold text-red-400 hover:text-red-300">
+                    britishclassicfl@gmail.com
+                  </a>.
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Collapsible Rules and Scoring -->
+          <div>
+            <h3 id="rulesToggle"
+                class="flex items-center justify-between text-xl font-semibold text-red-400 mb-2 cursor-pointer select-none">
+              <span>Rules and Scoring</span>
+              <svg id="rulesArrow" xmlns="http://www.w3.org/2000/svg"
+                   class="w-5 h-5 text-red-500 rules-arrow"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 9l-7 7-7-7" />
+              </svg>
+            </h3>
+
+            <div id="rulesContent" class="rules-collapsible mt-1">
+              <ul class="list-disc list-inside text-gray-300 space-y-1">
+                <br /><li>Predict a winner for all weight classes.</li><br />
+                <li>Choose a confidence level for your predictions. 1 = least confident and 16 = most confident. Each correct guess is added to your points total - highest score wins!</li><br />
+                <li>You will have the option to predict the winning total of each weight class, which will be used to work out your accuracy score.<br />
+                  This will be used as a tiebreaker if required; if two or more players finish at the top of the leaderboard with equal points, the player of those with the highest 
+                  accuracy score wins.</li><br />
+                <li>Finally, you will predict a male and female best lifter - final tie-breaker.</li><br />
+                <li>Your responses will be emailed to you upon form completion. Please also check your spam/junk folders for these.</li><br />
+                <li>Entries close on Thursday 4th December 2025 at 11.59pm. You will be able to edit your responses in the Google form until this date. All the best!</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Enter Now Button Container -->
+      <div class="flex justify-center mt-8">
+        <a href="entry.html"
+           class="inline-flex items-center justify-center bg-gray-800/60 border border-gray-700
+                  text-gray-200 font-semibold px-6 py-3 rounded-full backdrop-blur-sm shadow-lg
+                  hover:bg-gray-700/70 hover:text-red-400 transition text-sm">
+          Enter Now
+        </a>
+      </div>
+
+      <!-- Back to Top Button -->
+      <div class="flex justify-center mt-8">
+        <button id="bottomBackToTop"
+                class="bg-gray-800/60 border border-gray-700 text-red-500 w-10 h-10 rounded-full
+                       flex items-center justify-center backdrop-blur-sm shadow-lg
+                       hover:bg-gray-700/70 hover:text-red-400 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+          </svg>
+        </button>
+      </div>
+    </main>
+
+    <footer class="text-center text-gray-500 text-sm py-4 bg-transparent">
+      Sponsored by the Sabado Sessions Podcast
+    </footer>
+  </div>
+
+  <script>
+  const menuBtn = document.getElementById('menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  function toggleMenu(show) {
+    if (show) {
+      mobileMenu.classList.remove('scale-y-0', 'opacity-0', 'pointer-events-none');
+      mobileMenu.classList.add('scale-y-100', 'opacity-100');
+      menuBtn.setAttribute('aria-expanded', 'true');
+    } else {
+      mobileMenu.classList.add('scale-y-0', 'opacity-0', 'pointer-events-none');
+      mobileMenu.classList.remove('scale-y-100', 'opacity-100');
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
+  let menuVisible = false;
+
+  menuBtn.addEventListener('click', (e) => {
+    menuVisible = !menuVisible;
+    toggleMenu(menuVisible);
+    e.stopPropagation();
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+      if (menuVisible) {
+        menuVisible = false;
+        toggleMenu(false);
+      }
+    }
+  });
+
+  const bottomBackToTop = document.getElementById('bottomBackToTop');
+  if (bottomBackToTop) {
+    bottomBackToTop.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+
+  // === Collapsibles ===
+  const rulesToggle = document.getElementById('rulesToggle');
+  const rulesContent = document.getElementById('rulesContent');
+  const rulesArrow = document.getElementById('rulesArrow');
+
+  const prizesToggle = document.getElementById('prizesToggle');
+  const prizesContent = document.getElementById('prizesContent');
+  const prizesArrow = document.getElementById('prizesArrow');
+
+  const contactToggle = document.getElementById('contactToggle');
+  const contactContent = document.getElementById('contactContent');
+  const contactArrow = document.getElementById('contactArrow');
+
+  if (rulesToggle && rulesContent && rulesArrow) {
+    rulesToggle.addEventListener('click', () => {
+      const isOpen = rulesContent.classList.toggle('open');
+      rulesArrow.classList.toggle('rotate', isOpen);
+    });
+  }
+
+  if (prizesToggle && prizesContent && prizesArrow) {
+    prizesToggle.addEventListener('click', () => {
+      const isOpen = prizesContent.classList.toggle('open');
+      prizesArrow.classList.toggle('rotate', isOpen);
+    });
+  }
+
+  if (contactToggle && contactContent && contactArrow) {
+    contactToggle.addEventListener('click', () => {
+      const isOpen = contactContent.classList.toggle('open');
+      contactArrow.classList.toggle('rotate', isOpen);
+    });
+  }
+
+  // Initialize menu as hidden
+  toggleMenu(false);
+  </script>
+
+</body>
+</html>
