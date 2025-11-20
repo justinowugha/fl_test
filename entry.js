@@ -1,5 +1,5 @@
 // ========= CONFIG =========
-const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; // <-- paste your deployed Apps Script Web App URL
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYn1FEEVNpE9uZsX7NlVKK_05XIVGH2vjST9pxwUkO_H05NV2fA-Fab3KTyI930A/exec'; // <-- paste your deployed Apps Script Web App URL
 
 // ========= DOM ELEMENTS =========
 const form = document.getElementById('bcfl-form');
