@@ -1,297 +1,383 @@
-// ===== CONFIG =====
-const WEB_APP_URL = "PUT_YOUR_WEB_APP_URL_HERE"; // from Apps Script deployment
-const TOTAL_REGEX = /^(?:[0-9]|[1-9][0-9]{1,2}|1[0-9]{3}|2000)(?:\.0|\.5)?$/;
+// ========= CONFIG =========
+const SCRIPT_URL = 'YOUR_WEB_APP_URL_HERE'; // <-- paste your deployed Apps Script Web App URL
 
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("bcfl-form");
-  if (!form) return;
+// ========= DOM ELEMENTS =========
+const form = document.getElementById('bcfl-form');
+const steps = Array.from(document.querySelectorAll('.step'));
+const backBtn = document.getElementById('backBtn');
+const nextBtn = document.getElementById('nextBtn');
+const statusEl = document.getElementById('status');
+const stepLabel = document.getElementById('step-label');
+const tokenInput = document.getElementById('token');
 
-  const steps = Array.from(document.querySelectorAll(".step"));
-  const stepLabelEl = document.getElementById("step-label");
-  const statusEl = document.getElementById("status");
-  const backBtn = document.getElementById("backBtn");
-  const nextBtn = document.getElementById("nextBtn");
-  const tokenInput = document.getElementById("token");
+const emailInput = document.getElementById('email');
+const igInput = document.getElementById('instagramHandle');
+const leaderboardInput = document.getElementById('leaderboardName');
 
-  let currentStep = 0;
+const femaleBestInput = document.getElementById('femaleBest');
+const maleBestInput = document.getElementById('maleBest');
+const femaleBestList = document.getElementById('femaleBestList');
+const maleBestList = document.getElementById('maleBestList');
 
-  const stepLabels = [
-    "Step 1 of 4 – Contact details",
-    "Step 2 of 4 – Women’s classes",
-    "Step 3 of 4 – Men’s classes",
-    "Step 4 of 4 – Best lifters & submit"
+// All confidence selects
+const confSelects = Array.from(document.querySelectorAll('.conf-select'));
+
+// Class IDs (for looping)
+const femaleClasses = ['47w','52w','57w','63w','69w','76w','84w','84pw'];
+const maleClasses   = ['59m','66m','74m','83m','93m','105m','120m','120pm'];
+
+// ========= STATE =========
+let currentStep = 0;
+
+// ========= UTILS =========
+function showStep(index) {
+  steps.forEach((step, i) => {
+    step.style.display = i === index ? 'block' : 'none';
+  });
+
+  currentStep = index;
+  backBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
+
+  if (index === steps.length - 1) {
+    nextBtn.textContent = 'Submit';
+  } else {
+    nextBtn.textContent = 'Next';
+  }
+
+  const labels = [
+    'Step 1 of 4 – Contact',
+    'Step 2 of 4 – Women’s Classes',
+    'Step 3 of 4 – Men’s Classes',
+    'Step 4 of 4 – Best Lifters'
   ];
+  stepLabel.textContent = labels[index] || '';
+}
 
-  function showStatus(msg, type) {
-    if (!statusEl) return;
-    statusEl.textContent = msg || "";
-    statusEl.className = "text-sm mt-1";
-    if (type === "error") statusEl.classList.add("text-red-400");
-    else if (type === "success") statusEl.classList.add("text-green-400");
-    else statusEl.classList.add("text-gray-300");
-  }
+function showStatus(message, isError = false) {
+  statusEl.textContent = message;
+  statusEl.className = 'text-sm mt-1 ' + (isError ? 'text-red-400' : 'text-green-400');
+}
 
-  function showStep(idx) {
-    steps.forEach((s, i) => s.classList.toggle("hidden", i !== idx));
-    currentStep = idx;
-    stepLabelEl.textContent = stepLabels[idx] || "";
-    backBtn.classList.toggle("invisible", idx === 0);
-    nextBtn.textContent = idx === steps.length - 1 ? "Submit" : "Next";
-    showStatus("", "");
-  }
+function clearErrors() {
+  document.querySelectorAll('[id$="Error"]').forEach(el => {
+    el.textContent = '';
+  });
+}
 
-  function getValue(id) {
-    const el = document.getElementById(id);
-    return el ? el.value.trim() : "";
-  }
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
 
-  function setValue(id, val) {
-    const el = document.getElementById(id);
-    if (el && typeof val !== "undefined" && val !== null) {
-      el.value = String(val);
+// ========= CONFIDENCE RATING LOGIC =========
+
+function initConfidenceOptions() {
+  confSelects.forEach(sel => {
+    // Clear any existing
+    sel.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select rating…';
+    sel.appendChild(placeholder);
+
+    for (let i = 1; i <= 16; i++) {
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = String(i);
+      sel.appendChild(opt);
     }
-  }
+  });
+}
 
-  // ===== CONFIDENCE DROPDOWNS (1–16 unique) =====
-  const confSelects = Array.from(document.querySelectorAll(".conf-select"));
-  const CONF_VALUES = Array.from({ length: 16 }, (_, i) => String(i + 1));
+function refreshConfidenceDisables() {
+  const used = new Set(
+    confSelects
+      .map(sel => sel.value)
+      .filter(v => v !== '')
+  );
 
-  function rebuildConfidenceDropdowns() {
-    const chosen = confSelects.map(s => s.value).filter(v => v !== "");
-    confSelects.forEach(select => {
-      const current = select.value;
-      select.innerHTML = '<option value="">Select rating…</option>';
-      CONF_VALUES.forEach(val => {
-        if (val === current || !chosen.includes(val)) {
-          const opt = document.createElement("option");
-          opt.value = val;
-          opt.textContent = val;
-          if (val === current) opt.selected = true;
-          select.appendChild(opt);
-        }
-      });
+  confSelects.forEach(sel => {
+    const current = sel.value;
+    Array.from(sel.options).forEach(opt => {
+      if (!opt.value) return; // skip placeholder
+      opt.disabled = used.has(opt.value) && opt.value !== current;
     });
-  }
+  });
+}
 
-  confSelects.forEach(s => s.addEventListener("change", rebuildConfidenceDropdowns));
-  rebuildConfidenceDropdowns();
+confSelects.forEach(sel => {
+  sel.addEventListener('change', () => {
+    refreshConfidenceDisables();
+  });
+});
 
-  // ===== BEST LIFTER LISTS =====
-  function buildBestLifterLists() {
-    const femaleSet = new Set();
-    const maleSet = new Set();
-    const winnerSelects = Array.from(document.querySelectorAll("select[id^='w']"));
-    winnerSelects.forEach(sel => {
-      const gender = sel.dataset.gender;
+// ========= BEST LIFTER LISTS =========
+
+function buildBestLifterLists() {
+  // Collect options from all female and male class winner dropdowns
+  const femaleOptions = new Set();
+  const maleOptions = new Set();
+
+  femaleClasses.forEach(cls => {
+    const sel = document.getElementById('w' + cls);
+    if (sel) {
       Array.from(sel.options).forEach(opt => {
-        if (!opt.value) return;
-        if (gender === "female") femaleSet.add(opt.value);
-        if (gender === "male") maleSet.add(opt.value);
+        if (opt.value) femaleOptions.add(opt.textContent);
       });
-    });
-
-    const femaleList = document.getElementById("femaleBestList");
-    const maleList = document.getElementById("maleBestList");
-    if (!femaleList || !maleList) return;
-
-    femaleList.innerHTML = "";
-    maleList.innerHTML = "";
-
-    Array.from(femaleSet).forEach(v => {
-      const o = document.createElement("option");
-      o.value = v;
-      femaleList.appendChild(o);
-    });
-    Array.from(maleSet).forEach(v => {
-      const o = document.createElement("option");
-      o.value = v;
-      maleList.appendChild(o);
-    });
-  }
-  buildBestLifterLists();
-
-  // ===== VALIDATION =====
-  function clearErrors(stepIdx) {
-    const stepEl = steps[stepIdx];
-    if (!stepEl) return;
-    stepEl.querySelectorAll("[id$='Error']").forEach(el => el.textContent = "");
-  }
-
-  function setError(id, msg) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = msg;
-  }
-
-  function validateStep(stepIdx) {
-    let ok = true;
-    clearErrors(stepIdx);
-
-    if (stepIdx === 0) {
-      if (!getValue("email")) {
-        setError("emailError", "Please enter a valid email.");
-        ok = false;
-      }
-      if (!getValue("leaderboardName")) {
-        setError("leaderboardError", "Please enter a leaderboard name.");
-        ok = false;
-      }
-    }
-
-    if (stepIdx === 1) {
-      const requiredWinners = ["w47w","w52w","w57w","w63w","w69w","w76w","w84w","w84pw"];
-      const requiredConf = ["c47w","c52w","c57w","c63w","c69w","c76w","c84w","c84pw"];
-      requiredWinners.forEach(id => {
-        if (!getValue(id)) {
-          setError(id + "Error", "Please select a winner.");
-          ok = false;
-        }
-      });
-      requiredConf.forEach(id => {
-        if (!getValue(id)) {
-          setError(id + "Error", "Please choose a confidence rating.");
-          ok = false;
-        }
-      });
-      const totals = ["t47w","t52w","t57w","t63w","t69w","t76w","t84w","t84pw"];
-      totals.forEach(id => {
-        const v = getValue(id);
-        if (v !== "" && !TOTAL_REGEX.test(v)) {
-          setError(id + "Error", "Total must be 0–2000 in 0.5 steps (e.g. 865 or 865.5).");
-          ok = false;
-        }
-      });
-    }
-
-    if (stepIdx === 2) {
-      const requiredWinners = ["w59m","w66m","w74m","w83m","w93m","w105m","w120m","w120pm"];
-      const requiredConf = ["c59m","c66m","c74m","c83m","c93m","c105m","c120m","c120pm"];
-      requiredWinners.forEach(id => {
-        if (!getValue(id)) {
-          setError(id + "Error", "Please select a winner.");
-          ok = false;
-        }
-      });
-      requiredConf.forEach(id => {
-        if (!getValue(id)) {
-          setError(id + "Error", "Please choose a confidence rating.");
-          ok = false;
-        }
-      });
-      const totals = ["t59m","t66m","t74m","t83m","t93m","t105m","t120m","t120pm"];
-      totals.forEach(id => {
-        const v = getValue(id);
-        if (v !== "" && !TOTAL_REGEX.test(v)) {
-          setError(id + "Error", "Total must be 0–2000 in 0.5 steps (e.g. 865 or 865.5).");
-          ok = false;
-        }
-      });
-    }
-
-    if (stepIdx === 3) {
-      if (!getValue("femaleBest")) {
-        setError("femaleBestError", "Please enter a female lifter from the list.");
-        ok = false;
-      }
-      if (!getValue("maleBest")) {
-        setError("maleBestError", "Please enter a male lifter from the list.");
-        ok = false;
-      }
-    }
-
-    return ok;
-  }
-
-  // ===== NAV BUTTONS =====
-  backBtn.addEventListener("click", () => {
-    if (currentStep > 0) showStep(currentStep - 1);
-  });
-
-  nextBtn.addEventListener("click", async () => {
-    if (!validateStep(currentStep)) return;
-
-    if (currentStep < steps.length - 1) {
-      showStep(currentStep + 1);
-    } else {
-      // Submit
-      await submitForm();
     }
   });
 
-  // ===== SUBMIT =====
-  async function submitForm() {
-    showStatus("Submitting your entry…", "neutral");
-    nextBtn.disabled = true;
-    backBtn.disabled = true;
-
-    const data = {};
-    const formData = new FormData(form);
-    formData.forEach((v, k) => {
-      data[k] = v.toString().trim();
-    });
-
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "submit", data })
+  maleClasses.forEach(cls => {
+    const sel = document.getElementById('w' + cls);
+    if (sel) {
+      Array.from(sel.options).forEach(opt => {
+        if (opt.value) maleOptions.add(opt.textContent);
       });
-      const json = await res.json();
-      nextBtn.disabled = false;
-      backBtn.disabled = false;
+    }
+  });
 
-      if (!json.ok) {
-        showStatus(json.message || "Something went wrong.", "error");
-        return;
-      }
-      showStatus(json.message, "success");
-    } catch (err) {
-      nextBtn.disabled = false;
-      backBtn.disabled = false;
-      showStatus("Network error. Please try again.", "error");
+  femaleBestList.innerHTML = '';
+  femaleOptions.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    femaleBestList.appendChild(option);
+  });
+
+  maleBestList.innerHTML = '';
+  maleOptions.forEach(name => {
+    const option = document.createElement('option');
+    option.value = name;
+    maleBestList.appendChild(option);
+  });
+}
+
+// ========= VALIDATION =========
+
+const totalRegex = /^(?:[0-9]|[1-9][0-9]{1,2}|1[0-9]{3}|2000)(?:\.0|\.5)?$/;
+
+function validateStep(stepIndex) {
+  clearErrors();
+  let valid = true;
+
+  if (stepIndex === 0) {
+    if (!emailInput.value.trim()) {
+      setError('emailError', 'Email is required.');
+      valid = false;
+    }
+    if (!leaderboardInput.value.trim()) {
+      setError('leaderboardError', 'Leaderboard name is required.');
+      valid = false;
     }
   }
 
-  // ===== PREFILL FROM TOKEN (magic link) =====
-  function getQueryParam(name) {
-    const params = new URLSearchParams(window.location.search);
-    return params.get(name);
+  if (stepIndex === 1) {
+    // Women – winners & confidence required
+    femaleClasses.forEach(cls => {
+      const wSel = document.getElementById('w' + cls);
+      const cSel = document.getElementById('c' + cls);
+      const tInput = document.getElementById('t' + cls);
+
+      if (!wSel.value) {
+        setError('w' + cls + 'Error', 'Please pick a winner.');
+        valid = false;
+      }
+      if (!cSel.value) {
+        setError('c' + cls + 'Error', 'Please choose a confidence rating.');
+        valid = false;
+      }
+
+      const v = tInput.value.trim();
+      if (v !== '' && !totalRegex.test(v)) {
+        setError('t' + cls + 'Error', 'Use 0–2000 in steps of 0.5 (e.g. 865 or 865.5).');
+        valid = false;
+      }
+    });
   }
 
-  async function maybePrefillFromToken() {
-    const token = getQueryParam("token");
-    if (!token) {
-      showStep(0);
+  if (stepIndex === 2) {
+    // Men – winners & confidence required
+    maleClasses.forEach(cls => {
+      const wSel = document.getElementById('w' + cls);
+      const cSel = document.getElementById('c' + cls);
+      const tInput = document.getElementById('t' + cls);
+
+      if (!wSel.value) {
+        setError('w' + cls + 'Error', 'Please pick a winner.');
+        valid = false;
+      }
+      if (!cSel.value) {
+        setError('c' + cls + 'Error', 'Please choose a confidence rating.');
+        valid = false;
+      }
+
+      const v = tInput.value.trim();
+      if (v !== '' && !totalRegex.test(v)) {
+        setError('t' + cls + 'Error', 'Use 0–2000 in steps of 0.5 (e.g. 865 or 865.5).');
+        valid = false;
+      }
+    });
+
+    // Ensure confidence ratings are unique across ALL 16 classes
+    const allValues = confSelects.map(sel => sel.value).filter(v => v !== '');
+    const unique = new Set(allValues);
+    if (allValues.length !== 16 || unique.size !== 16) {
+      showStatus('Each confidence rating 1–16 must be used exactly once across all weight classes.', true);
+      valid = false;
+    }
+  }
+
+  if (stepIndex === 3) {
+    if (!femaleBestInput.value.trim()) {
+      setError('femaleBestError', 'Please choose a female best lifter.');
+      valid = false;
+    }
+    if (!maleBestInput.value.trim()) {
+      setError('maleBestError', 'Please choose a male best lifter.');
+      valid = false;
+    }
+  }
+
+  return valid;
+}
+
+// ========= PREFILL LOGIC =========
+
+async function prefillIfToken() {
+  const params = new URLSearchParams(window.location.search);
+  const existingToken = params.get('token');
+
+  if (!existingToken) return;
+
+  // Put token into hidden input so submit will update same row
+  tokenInput.value = existingToken;
+
+  try {
+    showStatus('Loading your saved entry…', false);
+    const res = await fetch(
+      SCRIPT_URL + '?action=prefill&token=' + encodeURIComponent(existingToken),
+      { method: 'GET' }
+    );
+    const json = await res.json();
+    if (!json.ok) {
+      showStatus(json.message || 'Could not load previous entry.', true);
       return;
     }
-    showStatus("Loading your saved entry…", "neutral");
-    try {
-      const res = await fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "prefill", token })
-      });
-      const json = await res.json();
-      if (!json.ok) {
-        showStatus(json.message || "Could not load entry.", "error");
-        showStep(0);
-        return;
-      }
-      const d = json.data || {};
-      Object.keys(d).forEach(k => setValue(k, d[k]));
-      if (tokenInput) tokenInput.value = token;
-      rebuildConfidenceDropdowns();
-      showStatus("Entry loaded. You can review and resubmit before the deadline.", "success");
+    const d = json.data || {};
 
-      // skip Spotify gate for edits
-      const spotifyLock = document.getElementById("spotify-lock");
-      if (spotifyLock) spotifyLock.classList.add("hidden");
+    // Contact
+    if (d.email)           emailInput.value = d.email;
+    if (d.instagramHandle) igInput.value = d.instagramHandle;
+    if (d.leaderboardName) leaderboardInput.value = d.leaderboardName;
 
-      showStep(0);
-    } catch (err) {
-      showStatus("Error loading entry. You can still submit a new one.", "error");
-      showStep(0);
+    // Winners – Women
+    femaleClasses.forEach(cls => {
+      const wSel = document.getElementById('w' + cls);
+      const tInput = document.getElementById('t' + cls);
+      const cSel  = document.getElementById('c' + cls);
+
+      const wKey = 'w' + cls;
+      const tKey = 't' + cls;
+      const cKey = 'c' + cls;
+
+      if (d[wKey] && wSel) wSel.value = d[wKey];
+      if (d[tKey] && tInput) tInput.value = d[tKey];
+      if (d[cKey] && cSel) cSel.value = String(d[cKey]);
+    });
+
+    // Winners – Men
+    maleClasses.forEach(cls => {
+      const wSel = document.getElementById('w' + cls);
+      const tInput = document.getElementById('t' + cls);
+      const cSel  = document.getElementById('c' + cls);
+
+      const wKey = 'w' + cls;
+      const tKey = 't' + cls;
+      const cKey = 'c' + cls;
+
+      if (d[wKey] && wSel) wSel.value = d[wKey];
+      if (d[tKey] && tInput) tInput.value = d[tKey];
+      if (d[cKey] && cSel) cSel.value = String(d[cKey]);
+    });
+
+    // Best lifters
+    if (d.femaleBest) femaleBestInput.value = d.femaleBest;
+    if (d.maleBest)   maleBestInput.value   = d.maleBest;
+
+    // After setting confidence values, refresh disables
+    refreshConfidenceDisables();
+
+    showStatus('Your previous entry has been loaded. You can edit and resubmit.', false);
+  } catch (err) {
+    showStatus('Error loading previous entry. You can still submit a new one.', true);
+  }
+}
+
+// ========= SUBMIT =========
+
+async function submitForm() {
+  clearErrors();
+  showStatus('');
+
+  // Final step validation (step 3) plus earlier sections
+  // We validate all steps in sequence to catch errors even if user jumps.
+  for (let s = 0; s < steps.length; s++) {
+    if (!validateStep(s)) {
+      showStep(s);
+      return;
     }
   }
 
-  maybePrefillFromToken();
+  showStatus('Submitting your entry…', false);
+  nextBtn.disabled = true;
+  backBtn.disabled = true;
+
+  try {
+    const formData = new FormData(form);
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: formData
+    });
+    const json = await res.json();
+
+    if (!json.ok) {
+      showStatus(json.message || 'There was an error saving your entry.', true);
+      nextBtn.disabled = false;
+      backBtn.disabled = false;
+      return;
+    }
+
+    showStatus(json.message || 'Entry saved. Check your email for confirmation and your edit link.', false);
+  } catch (err) {
+    showStatus('Network or server error. Please try again.', true);
+    nextBtn.disabled = false;
+    backBtn.disabled = false;
+  }
+}
+
+// ========= NAVIGATION HANDLERS =========
+
+backBtn.addEventListener('click', () => {
+  if (currentStep > 0) {
+    showStep(currentStep - 1);
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentStep < steps.length - 1) {
+    // Validate current step before moving on
+    if (!validateStep(currentStep)) return;
+    showStep(currentStep + 1);
+  } else {
+    // On the last step, submit
+    submitForm();
+  }
+});
+
+// ========= INIT =========
+
+document.addEventListener('DOMContentLoaded', async () => {
+  initConfidenceOptions();
+  buildBestLifterLists();
+  showStep(0);
+  await prefillIfToken();
 });
